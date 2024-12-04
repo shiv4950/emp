@@ -1,4 +1,8 @@
 
+
+
+
+
 # 1. Inventory File (inventory.ini)
 [production]
 managed_node1 ansible_host=<managed_node1_IP>
@@ -105,4 +109,125 @@ ansible_ssh_private_key_file=/path/to/your-key.pem
         name: user3
         state: present
         create_home: yes
+
+
+
+ # ansible
+ a) Launch Four EC2 Instances in AWS
+Control Node:
+
+Instance type: t2.micro
+Storage: 15 GiB
+Managed Nodes (server1, server2, dev1):
+
+Instance type: t2.micro
+Storage: 8 GiB each
+Note: Ensure all instances use the same .pem file for SSH access.
+
+b) Install Ansible on the Control Node
+SSH into your control node:
+bash
+Copy code
+ssh -i your-key.pem ubuntu@<control-node-IP>
+Update packages and install Ansible:
+bash
+Copy code
+sudo apt update
+sudo apt install -y ansible
+c) Transfer the .pem File to the Control Node
+Transfer the .pem file from your local machine:
+bash
+Copy code
+scp -i your-key.pem your-key.pem ubuntu@<control-node-IP>:/home/ubuntu
+Set proper permissions for the key file:
+bash
+Copy code
+chmod 400 /home/ubuntu/your-key.pem
+d) Create an Ansible Inventory File
+Create an inventory file (inventory.ini) on the control node:
+bash
+Copy code
+nano inventory.ini
+Add the following content to the file:
+ini
+Copy code
+[production]
+server1 ansible_host=<server1-IP>
+server2 ansible_host=<server2-IP>
+
+[production:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_user=ubuntu
+ansible_ssh_private_key_file=/home/ubuntu/your-key.pem
+
+[development]
+dev1 ansible_host=<dev1-IP>
+
+[development:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_user=ubuntu
+ansible_ssh_private_key_file=/home/ubuntu/your-key.pem
+Operations Using Ansible Ad-Hoc Commands
+
+e) Verify Connections to Managed Nodes
+Run the following to ping the groups:
+
+bash
+Copy code
+ansible production -i inventory.ini -m ping
+ansible development -i inventory.ini -m ping
+
+f) Install Java 17 on Managed Nodes in the Production Group
+bash
+Copy code
+ansible production -i inventory.ini -b -m apt -a "name=openjdk-17-jdk state=present update_cache=yes"
+
+g) Gather System Information from Managed Nodes
+Get the logged-in user:
+
+bash
+Copy code
+ansible production -i inventory.ini -m command -a "whoami"
+Get system uptime:
+
+bash
+Copy code
+ansible production -i inventory.ini -m command -a "uptime"
+Get CPU information:
+
+bash
+Copy code
+ansible production -i inventory.ini -m command -a "lscpu"
+Get available disk space:
+
+bash
+Copy code
+ansible production -i inventory.ini -m command -a "df -h"
+Get system memory usage:
+
+bash
+Copy code
+ansible production -i inventory.ini -m command -a "free -h"
+
+h) Display Inventory Information
+bash
+Copy code
+ansible-inventory -i inventory.ini --list
+i) Display Git Executable Path
+On all servers in both the production and development groups:
+
+bash
+Copy code
+ansible production:development -i inventory.ini -m command -a "which git"
+Only on servers that are in both groups:
+
+bash
+Copy code
+ansible production:&development -i inventory.ini -m command -a "which git"
+Only on servers that are in the production group but not in the development group:
+
+bash
+Copy code
+ansible production:!development -i inventory.ini -m command -a "which git"
+This guide provides a comprehensive step-by-step approach to setting up and managing nodes using Ansible on Ubuntu. Let me know if you need any more details!
 
