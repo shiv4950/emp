@@ -3,7 +3,7 @@
 
 
 
- 1. Inventory File (inventory.ini)
+# 1. Inventory File (inventory.ini)
 [production]
 managed_node1 ansible_host=<managed_node1_IP>
 managed_node2 ansible_host=<managed_node2_IP>
